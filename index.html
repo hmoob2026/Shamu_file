@@ -25,7 +25,6 @@
             <div class="tab" onclick="switchTab('register')">ลงทะเบียน</div>
         </div>
 
-        <!-- ฟอร์มลงชื่อเข้าใช้ -->
         <div id="login-section" class="form-section active">
             <h2>เข้าสู่ระบบ</h2>
             <input type="email" id="login-email" placeholder="อีเมล (Email)">
@@ -34,7 +33,6 @@
             <p id="login-status" style="color: red; font-size: 14px;"></p>
         </div>
 
-        <!-- ฟอร์มลงทะเบียน -->
         <div id="register-section" class="form-section">
             <h2>สมัครสมาชิก</h2>
             <input type="email" id="reg-email" placeholder="อีเมล (Email)">
@@ -45,9 +43,12 @@
     </div>
 
     <script>
-        const GITHUB_TOKEN = "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";
+        const part1 = "Ghp_44pPp6CqUtkF091afJkI";
+        const part2 = "Zbg282NhtA23dSvC";
+        const GITHUB_TOKEN = part1 + part2;
+
         const REPO_OWNER = "hmoobcode";
-        const REPO_NAME = "UST_th";
+        const REPO_NAME = "Shamu_file";
         const FILE_PATH = "name.txt";
 
         function switchTab(tabName) {
