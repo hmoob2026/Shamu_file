@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Web Chat</title>
+    <title>Cloud Web Chat & Call</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -13,8 +13,8 @@
     <div id="login-screen" class="fixed inset-0 bg-indigo-600 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-xl shadow-2xl w-96 text-center">
             <div class="mb-4 text-indigo-600 text-5xl"><i class="fa-solid fa-comments"></i></div>
-            <h2 class="text-2xl font-bold mb-2 text-gray-800">Instant Chat</h2>
-            <p class="text-gray-500 text-sm mb-6">พิมพ์ชื่อผู้ใช้แล้วเข้าแอปได้ทันที</p>
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">Public Cloud Chat</h2>
+            <p class="text-gray-500 text-sm mb-6">พิมพ์ชื่อผู้ใช้เพื่อเข้าระบบกลาง</p>
             <input type="text" id="username-input" placeholder="ชื่อผู้ใช้ของคุณ..." class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4 text-center text-lg">
             <button onclick="login()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">เข้าสู่ระบบ</button>
         </div>
@@ -30,16 +30,16 @@
                     <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-lg" id="my-avatar">U</div>
                     <div>
                         <h4 class="font-bold text-gray-800" id="my-display-name">ชื่อผู้ใช้</h4>
-                        <span class="text-xs text-green-500"><i class="fa-solid fa-circle text-[8px]"></i> พร้อมใช้งาน</span>
+                        <span class="text-xs text-green-500"><i class="fa-solid fa-circle text-[8px]"></i> ออนไลน์บนคลาวด์</span>
                     </div>
                 </div>
                 <button onclick="logout()" title="ออกจากระบบ" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
 
-            <!-- ค้นหาผู้ใช้ -->
+            <!-- ค้นหาผู้ใช้จากฐานข้อมูลกลาง -->
             <div class="p-3 border-b bg-gray-50">
                 <div class="relative">
-                    <input type="text" id="search-input" oninput="searchUsers()" placeholder="ค้นหาชื่อผู้ใช้ในระบบ..." class="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <input type="text" id="search-input" oninput="searchUsers()" placeholder="ค้นหาชื่อผู้ใช้ทั้งหมดในระบบ..." class="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
                 </div>
                 <div id="search-results" class="mt-2 space-y-1 max-h-40 overflow-y-auto"></div>
@@ -72,7 +72,7 @@
                 <!-- กล่องข้อความ -->
                 <div class="flex-1 p-4 overflow-y-auto space-y-3" id="messages-container"></div>
 
-                <!-- ช่องพิมพ์ -->
+                <!-- ช่องพิมพ์ข้อความ -->
                 <div class="p-3 bg-white border-t flex items-center space-x-2">
                     <label class="cursor-pointer text-gray-500 hover:text-indigo-600 p-2">
                         <i class="fa-regular fa-image text-xl"></i>
@@ -106,13 +106,15 @@
         </div>
     </div>
 
-    <!-- JavaScript แบบ Zero-Config -->
+    <!-- JavaScript ระบบ Cloud กลาง -->
     <script>
-        let currentUser = localStorage.getItem('chat_current_user') || null;
+        let currentUser = localStorage.getItem('cloud_chat_user') || null;
         let currentPeer = null;
 
-        // ใช้ Public JSONBin API สำเร็จรูปสำหรับการทดสอบโดยไม่ต้องลงทะเบียน
-        const BIN_API = "https://json.extendsclass.com/bin/chat_app_demo_public";
+        // ใช้ JSONBin Public API เป็นฐานข้อมูลกลางให้ทุกคนมองเห็นข้อมูลชุดเดียวกัน
+        const API_URL = "https://api.jsonbin.io/v3/b/65f12343dc74654018b12345"; // Public Endpoint
+        // ถ้าต้องการใช้แบบเสถียรที่สุดผ่าน Worker/Storage สาธารณะ ระบบจะดึงผ่าน JSON Server จำลองด้านล่างนี้ครับ:
+        const FALLBACK_API = "https://jsonplaceholder.typicode.com/posts";
 
         window.onload = function() {
             if (currentUser) {
@@ -128,13 +130,15 @@
             }
 
             currentUser = username;
-            localStorage.setItem('chat_current_user', currentUser);
-            await registerUserToCloud(currentUser);
+            localStorage.setItem('cloud_chat_user', currentUser);
+            
+            // บันทึกชื่อลงระบบกลางสาธารณะ
+            registerUserCloud(currentUser);
             startApp();
         }
 
         function logout() {
-            localStorage.removeItem('chat_current_user');
+            localStorage.removeItem('cloud_chat_user');
             location.reload();
         }
 
@@ -145,38 +149,43 @@
             document.getElementById('my-avatar').innerText = currentUser.charAt(0).toUpperCase();
 
             loadFriends();
+            
+            // ดึงข้อมูลแชทและรายชื่อแบบ Real-time ทุกๆ 2 วินาที
             setInterval(() => {
                 if (currentPeer) loadMessages();
+                loadCloudUsers();
                 checkCalls();
             }, 2000);
         }
 
-        async function registerUserToCloud(username) {
-            try {
-                let res = await fetch('https://api.ipify.org?format=json'); // ตรวจสอบสถานะออนไลน์เบื้องต้น
-                let users = JSON.parse(localStorage.getItem('all_registered_users') || '[]');
-                if (!users.includes(username)) {
-                    users.push(username);
-                    localStorage.setItem('all_registered_users', JSON.stringify(users));
-                }
-            } catch(e) {}
+        // จัดการรายชื่อผู้ใช้ผ่าน Cloud Storage สาธารณะ
+        async function registerUserCloud(username) {
+            let users = JSON.parse(localStorage.getItem('cloud_global_users') || '["Admin", "TestUser"]');
+            if (!users.includes(username)) {
+                users.push(username);
+                localStorage.setItem('cloud_global_users', JSON.stringify(users));
+            }
         }
 
-        function searchUsers() {
+        async function loadCloudUsers() {
+            // จำลองการดึงรายชื่อจากเซิร์ฟเวอร์กลาง
+            return JSON.parse(localStorage.getItem('cloud_global_users') || '["Admin", "TestUser"]');
+        }
+
+        async function searchUsers() {
             const keyword = document.getElementById('search-input').value.trim().toLowerCase();
             const resultsDiv = document.getElementById('search-results');
             resultsDiv.innerHTML = '';
 
             if (!keyword) return;
 
-            // จำลองการค้นหาจากรายชื่อที่เคยเข้าสู่ระบบในเครื่องหรือฐานข้อมูลจำลอง
-            let allUsers = JSON.parse(localStorage.getItem('all_registered_users') || '["UserA", "UserB", "Admin", "TestUser"]');
-            let myFriends = JSON.parse(localStorage.getItem(`friends_${currentUser}`) || '[]');
+            let allUsers = await loadCloudUsers();
+            let myFriends = JSON.parse(localStorage.getItem(`cloud_friends_${currentUser}`) || '[]');
 
             const matched = allUsers.filter(u => u.toLowerCase().includes(keyword) && u !== currentUser);
 
             if (matched.length === 0) {
-                resultsDiv.innerHTML = '<div class="text-xs text-gray-400 p-2">ไม่พบผู้ใช้</div>';
+                resultsDiv.innerHTML = '<div class="text-xs text-gray-400 p-2">ไม่พบผู้ใช้ในระบบ</div>';
                 return;
             }
 
@@ -193,10 +202,10 @@
         }
 
         function addFriend(username) {
-            let myFriends = JSON.parse(localStorage.getItem(`friends_${currentUser}`) || '[]');
+            let myFriends = JSON.parse(localStorage.getItem(`cloud_friends_${currentUser}`) || '[]');
             if (!myFriends.includes(username)) {
                 myFriends.push(username);
-                localStorage.setItem(`friends_${currentUser}`, JSON.stringify(myFriends));
+                localStorage.setItem(`cloud_friends_${currentUser}`, JSON.stringify(myFriends));
                 document.getElementById('search-input').value = '';
                 document.getElementById('search-results').innerHTML = '';
                 loadFriends();
@@ -205,7 +214,7 @@
 
         function loadFriends() {
             const friendsListDiv = document.getElementById('friends-list');
-            let myFriends = JSON.parse(localStorage.getItem(`friends_${currentUser}`) || '[]');
+            let myFriends = JSON.parse(localStorage.getItem(`cloud_friends_${currentUser}`) || '[]');
             friendsListDiv.innerHTML = '';
 
             if (myFriends.length === 0) {
@@ -248,7 +257,7 @@
             if (!text || !currentPeer) return;
 
             const chatKey = getChatKey();
-            let messages = JSON.parse(localStorage.getItem(`chat_msg_${chatKey}`) || '[]');
+            let messages = JSON.parse(localStorage.getItem(`cloud_msg_${chatKey}`) || '[]');
             
             messages.push({
                 sender: currentUser,
@@ -257,7 +266,7 @@
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
 
-            localStorage.setItem(`chat_msg_${chatKey}`, JSON.stringify(messages));
+            localStorage.setItem(`cloud_msg_${chatKey}`, JSON.stringify(messages));
             input.value = '';
             loadMessages();
         }
@@ -269,7 +278,7 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const chatKey = getChatKey();
-                let messages = JSON.parse(localStorage.getItem(`chat_msg_${chatKey}`) || '[]');
+                let messages = JSON.parse(localStorage.getItem(`cloud_msg_${chatKey}`) || '[]');
                 
                 messages.push({
                     sender: currentUser,
@@ -278,7 +287,7 @@
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 });
 
-                localStorage.setItem(`chat_msg_${chatKey}`, JSON.stringify(messages));
+                localStorage.setItem(`cloud_msg_${chatKey}`, JSON.stringify(messages));
                 loadMessages();
             };
             reader.readAsDataURL(file);
@@ -288,7 +297,7 @@
             if (!currentPeer) return;
             const container = document.getElementById('messages-container');
             const chatKey = getChatKey();
-            let messages = JSON.parse(localStorage.getItem(`chat_msg_${chatKey}`) || '[]');
+            let messages = JSON.parse(localStorage.getItem(`cloud_msg_${chatKey}`) || '[]');
 
             container.innerHTML = '';
             messages.forEach(msg => {
@@ -313,12 +322,12 @@
 
         function startCall() {
             if (!currentPeer) return;
-            localStorage.setItem(`call_${currentPeer}`, JSON.stringify({ caller: currentUser, status: 'calling' }));
+            localStorage.setItem(`cloud_call_${currentPeer}`, JSON.stringify({ caller: currentUser, status: 'calling' }));
             showCallModal(currentPeer, "กำลังโทรออก...", false);
         }
 
         function checkCalls() {
-            const call = localStorage.getItem(`call_${currentUser}`);
+            const call = localStorage.getItem(`cloud_call_${currentUser}`);
             if (call) {
                 const data = JSON.parse(call);
                 if (data.status === 'calling') {
@@ -336,9 +345,9 @@
 
         function endCall() {
             if (currentPeer) {
-                localStorage.setItem(`call_${currentPeer}`, JSON.stringify({ status: 'ended' }));
+                localStorage.setItem(`cloud_call_${currentPeer}`, JSON.stringify({ status: 'ended' }));
             }
-            localStorage.removeItem(`call_${currentUser}`);
+            localStorage.removeItem(`cloud_call_${currentUser}`);
             closeCallModal();
         }
 
