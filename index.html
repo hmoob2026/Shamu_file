@@ -1,44 +1,43 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Cloud Chat & Profile</title>
+    <title>GitHub Auto-Save Cloud Chat & Call</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 h-screen flex flex-col">
 
-    <!-- 1. หน้าจอเข้าสู่ระบบ -->
+    <!-- 1. หน้าจอเข้าสู่ระบบ / ลงทะเบียน -->
     <div id="login-screen" class="fixed inset-0 bg-indigo-600 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-xl shadow-2xl w-96 text-center">
-            <div class="mb-4 text-indigo-600 text-5xl"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="mb-4 text-indigo-600 text-5xl"><i class="fa-solid fa-cloud-arrow-up"></i></div>
             <h2 class="text-2xl font-bold mb-2 text-gray-800">Secure Cloud Chat</h2>
-            <p class="text-gray-500 text-sm mb-6">ตรวจสอบสิทธิ์จากไฟล์ name.txt</p>
-            <input type="text" id="username-input" placeholder="ชื่อผู้ใช้..." class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3 text-center text-lg">
-            <input type="password" id="pin-input" maxlength="4" placeholder="รหัสผ่าน 4 หลัก" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4 text-center text-lg tracking-widest">
-            <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">เข้าสู่ระบบ</button>
+            <p class="text-gray-500 text-sm mb-6">บันทึกและตรวจสอบสิทธิ์ผ่าน GitHub name.txt อัตโนมัติ</p>
+            <input type="text" id="username-input" placeholder="ชื่อผู้ใช้ของคุณ..." class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3 text-center text-lg">
+            <input type="password" id="pin-input" maxlength="4" placeholder="รหัสผ่าน 4 หลัก (PIN)" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4 text-center text-lg tracking-widest">
+            <button onclick="handleAutoRegisterAndLogin()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">เข้าสู่ระบบ / ลงทะเบียน</button>
         </div>
     </div>
 
     <!-- 2. หน้าจอหลักของแอป -->
     <div id="app-screen" class="hidden flex h-full overflow-hidden">
         
-        <!-- Sidebar -->
+        <!-- Sidebar: โปรไฟล์, ค้นหา, เพื่อน -->
         <div class="w-1/3 bg-white border-r flex flex-col">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50">
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="openProfileModal()">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="openProfileModal()" title="ดูโปรไฟล์ของคุณ">
                     <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-lg overflow-hidden" id="my-avatar">U</div>
                     <div>
                         <h4 class="font-bold text-gray-800" id="my-display-name">ชื่อผู้ใช้</h4>
-                        <span class="text-xs text-green-500"><i class="fa-solid fa-circle text-[8px]"></i> ปลอดภัย (PIN)</span>
+                        <span class="text-xs text-green-500"><i class="fa-solid fa-circle text-[8px]"></i> ซิงค์กับ GitHub แล้ว</span>
                     </div>
                 </div>
                 <button onclick="logout()" title="ออกจากระบบ" class="text-gray-500 hover:text-red-500 text-lg p-2"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
 
-            <!-- ค้นหาเพื่อน -->
+            <!-- ค้นหาผู้ใช้จาก name.txt -->
             <div class="p-3 border-b bg-gray-50">
                 <div class="relative">
                     <input type="text" id="search-input" oninput="searchUsers()" placeholder="ค้นหาชื่อผู้ใช้จาก name.txt..." class="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
@@ -51,7 +50,7 @@
             <div class="flex-1 overflow-y-auto divide-y" id="friends-list"></div>
         </div>
 
-        <!-- ห้องแชท -->
+        <!-- ห้องแชทหลัก -->
         <div class="w-2/3 flex flex-col bg-gray-50" id="chat-area">
             <div class="flex-1 flex items-center justify-center text-gray-400 flex-col" id="no-chat-selected">
                 <i class="fa-regular fa-comments text-6xl mb-3"></i>
@@ -60,20 +59,24 @@
 
             <div id="active-chat" class="hidden flex-col h-full">
                 <div class="p-4 bg-white border-b flex justify-between items-center shadow-sm">
-                    <div class="flex items-center space-x-3 cursor-pointer" onclick="openPeerProfile()">
+                    <div class="flex items-center space-x-3 cursor-pointer" onclick="openPeerProfile()" title="ดูโปรไฟล์เพื่อน">
                         <div class="w-9 h-9 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center font-bold overflow-hidden" id="chat-peer-avatar">P</div>
                         <div>
                             <h3 class="font-bold text-gray-800" id="chat-peer-name">ชื่อเพื่อน</h3>
                             <span class="text-[10px] text-gray-400">คลิกเพื่อดูโปรไฟล์</span>
                         </div>
                     </div>
-                    <button onclick="startCall()" class="w-10 h-10 rounded-full bg-green-100 text-green-600 hover:bg-green-200 flex items-center justify-center transition" title="โทรด้วยเสียง">
-                        <i class="fa-solid fa-phone"></i>
-                    </button>
+                    <div class="flex space-x-3">
+                        <button onclick="startCall()" class="w-10 h-10 rounded-full bg-green-100 text-green-600 hover:bg-green-200 flex items-center justify-center transition" title="โทรด้วยเสียง">
+                            <i class="fa-solid fa-phone"></i>
+                        </button>
+                    </div>
                 </div>
 
+                <!-- กล่องข้อความ -->
                 <div class="flex-1 p-4 overflow-y-auto space-y-3" id="messages-container"></div>
 
+                <!-- ช่องพิมพ์ข้อความ -->
                 <div class="p-3 bg-white border-t flex items-center space-x-2">
                     <label class="cursor-pointer text-gray-500 hover:text-indigo-600 p-2">
                         <i class="fa-regular fa-image text-xl"></i>
@@ -88,7 +91,7 @@
         </div>
     </div>
 
-    <!-- Modal โปรไฟล์ส่วนตัว -->
+    <!-- 3. หน้าต่างโปรไฟล์ส่วนตัว (Modal) -->
     <div id="profile-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 text-center relative">
             <button onclick="closeProfileModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -101,12 +104,12 @@
                 </label>
             </div>
             <h4 class="text-lg font-semibold text-gray-800" id="modal-my-name">Username</h4>
-            <p class="text-xs text-gray-400 mt-1">ตรวจสอบสิทธิ์จาก name.txt แล้ว</p>
+            <p class="text-xs text-gray-400 mt-1">บันทึกลง name.txt บน GitHub อัตโนมัติ</p>
             <div class="mt-6"><button onclick="closeProfileModal()" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg font-medium">ปิด</button></div>
         </div>
     </div>
 
-    <!-- Modal โปรไฟล์เพื่อน -->
+    <!-- 4. หน้าต่างดูโปรไฟล์เพื่อน (Modal) -->
     <div id="peer-profile-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 text-center relative">
             <button onclick="closePeerProfile()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -117,7 +120,7 @@
         </div>
     </div>
 
-    <!-- Modal สายเรียกเข้า -->
+    <!-- 5. หน้าต่างจำลองการโทรด้วยเสียง -->
     <div id="call-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-80 flex flex-col items-center">
             <div class="w-24 h-24 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-4xl mb-4 animate-pulse"><i class="fa-solid fa-user"></i></div>
@@ -130,97 +133,141 @@
         </div>
     </div>
 
+    <!-- JavaScript ส่วนเชื่อมต่อ GitHub API และระบบภายใน -->
     <script>
-        let currentUser = localStorage.getItem('secure_chat_user') || null;
+        // --- ⚙️ ตั้งค่า GitHub ของคุณที่นี่ ---
+        const GITHUB_TOKEN = "YOUR_GITHUB_PERSONAL_ACCESS_TOKEN"; // ใส่ Token ของคุณ
+        const REPO_OWNER = "YOUR_GITHUB_USERNAME"; // ชื่อบัญชี GitHub ของคุณ
+        const REPO_NAME = "YOUR_REPOSITORY_NAME"; // ชื่อ Repository ของคุณ
+        const FILE_PATH = "name.txt";
+
+        let currentUser = localStorage.getItem('gh_auto_user') || null;
         let currentPeer = null;
-        let nameTxtDatabase = {};
+        let globalDatabase = {};
 
         window.onload = async function() {
-            await loadNameTxtFile();
-            if (currentUser && nameTxtDatabase[currentUser]) {
+            await fetchGitHubNameFile();
+            if (currentUser && globalDatabase[currentUser]) {
                 startApp();
             }
         };
 
-        // โหลดข้อมูลจากไฟล์ name.txt บน GitHub ของคุณโดยตรง
-        async function loadNameTxtFile() {
+        // ดึงข้อมูลจาก name.txt บน GitHub
+        async function fetchGitHubNameFile() {
             try {
-                // ดึงไฟล์ name.txt ที่อยู่ในโฟลเดอร์เดียวกันบน GitHub Pages
-                const response = await fetch('name.txt?t=' + new Date().getTime());
-                if (response.ok) {
-                    nameTxtDatabase = await response.json();
-                } else {
-                    console.error("ไม่พบไฟล์ name.txt");
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+                const res = await fetch(url, { headers: { "Authorization": `token ${GITHUB_TOKEN}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.content) {
+                        const decodedContent = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+                        globalDatabase = JSON.parse(decodedContent || "{}");
+                    }
                 }
             } catch (e) {
-                console.error("เกิดข้อผิดพลาดในการโหลด name.txt:", e);
-                nameTxtDatabase = {};
+                globalDatabase = {};
             }
         }
 
-        async function handleLogin() {
+        // บันทึกข้อมูลลง name.txt บน GitHub อัตโนมัติ
+        async function saveGitHubNameFile() {
+            try {
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+                let sha = "";
+                const getRes = await fetch(url, { headers: { "Authorization": `token ${GITHUB_TOKEN}` } });
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    sha = fileData.sha;
+                }
+
+                const jsonString = JSON.stringify(globalDatabase, null, 2);
+                const contentEncoded = btoa(unescape(encodeURIComponent(jsonString)));
+
+                await fetch(url, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${GITHUB_TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: "Auto-register / Update via Web App",
+                        content: contentEncoded,
+                        sha: sha
+                    })
+                });
+            } catch (e) {
+                console.error("Auto-Save Error:", e);
+            }
+        }
+
+        async function handleAutoRegisterAndLogin() {
             const username = document.getElementById('username-input').value.trim();
             const pin = document.getElementById('pin-input').value.trim();
 
             if (!username || pin.length !== 4) {
-                alert('กรุณากรอกชื่อผู้ใช้ และรหัสผ่าน 4 หลัก');
+                alert('กรุณากรอกชื่อผู้ใช้ และรหัสผ่าน 4 หลักให้ถูกต้อง');
                 return;
             }
 
-            // โหลดข้อมูลล่าสุดจาก name.txt ทุกครั้งที่กดล็อกอิน
-            await loadNameTxtFile();
+            await fetchGitHubNameFile();
 
-            if (!nameTxtDatabase[username]) {
-                alert('ไม่พบชื่อผู้ใช้นี้ในระบบ (ตรวจสอบไฟล์ name.txt)');
-                return;
-            }
-
-            if (nameTxtDatabase[username].pin !== pin) {
-                alert('รหัสผ่าน 4 หลักไม่ถูกต้อง!');
-                return;
+            if (globalDatabase[username]) {
+                if (globalDatabase[username].pin !== pin) {
+                    alert('รหัสผ่าน 4 หลักไม่ถูกต้อง! ป้องกันการเข้าถึงโดยบุคคลอื่น');
+                    return;
+                }
+            } else {
+                // ลงทะเบียนผู้ใช้ใหม่ บันทึกลง name.txt ทันที
+                globalDatabase[username] = {
+                    pin: pin,
+                    avatar: "",
+                    registeredAt: new Date().toISOString()
+                };
+                await saveGitHubNameFile();
             }
 
             currentUser = username;
-            localStorage.setItem('secure_chat_user', currentUser);
+            localStorage.setItem('gh_auto_user', currentUser);
             startApp();
         }
 
         function logout() {
-            localStorage.removeItem('secure_chat_user');
+            localStorage.removeItem('gh_auto_user');
             location.reload();
         }
 
-        async function startApp() {
+        function startApp() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('my-display-name').innerText = currentUser;
-            
             updateAvatarDisplays();
             loadFriends();
 
             setInterval(async () => {
-                await loadNameTxtFile();
+                await fetchGitHubNameFile();
                 if (currentPeer) loadMessages();
                 checkCalls();
-            }, 3000);
+            }, 5000);
         }
 
-        // --- โปรไฟล์และการอัปโหลดรูป (เก็บบน LocalStorage เฉพาะตัวบุคคล) ---
-        function updateMyAvatar(event) {
+        async function updateMyAvatar(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                localStorage.setItem(`avatar_${currentUser}`, e.target.result);
-                updateAvatarDisplays();
+            reader.onload = async function(e) {
+                if (globalDatabase[currentUser]) {
+                    globalDatabase[currentUser].avatar = e.target.result;
+                    await saveGitHubNameFile();
+                    updateAvatarDisplays();
+                }
             };
             reader.readAsDataURL(file);
         }
 
         function updateAvatarDisplays() {
-            let customAvatar = localStorage.getItem(`avatar_${currentUser}`);
-            let html = customAvatar ? `<img src="${customAvatar}" class="w-full h-full object-cover">` : currentUser.charAt(0).toUpperCase();
+            let userObj = globalDatabase[currentUser];
+            let html = (userObj && userObj.avatar) ? `<img src="${userObj.avatar}" class="w-full h-full object-cover">` : currentUser.charAt(0).toUpperCase();
             document.getElementById('my-avatar').innerHTML = html;
             document.getElementById('modal-my-avatar').innerHTML = html;
             document.getElementById('modal-my-name').innerText = currentUser;
@@ -232,23 +279,22 @@
         function openPeerProfile() {
             if (!currentPeer) return;
             document.getElementById('peer-modal-name').innerText = currentPeer;
-            let peerAvatar = localStorage.getItem(`avatar_${currentPeer}`);
-            let html = peerAvatar ? `<img src="${peerAvatar}" class="w-full h-full object-cover">` : currentPeer.charAt(0).toUpperCase();
+            let peerObj = globalDatabase[currentPeer];
+            let html = (peerObj && peerObj.avatar) ? `<img src="${peerObj.avatar}" class="w-full h-full object-cover">` : currentPeer.charAt(0).toUpperCase();
             document.getElementById('peer-modal-avatar').innerHTML = html;
             document.getElementById('peer-profile-modal').classList.remove('hidden');
         }
         function closePeerProfile() { document.getElementById('peer-profile-modal').classList.add('hidden'); }
 
-        // --- ค้นหาผู้ใช้จาก name.txt ---
         async function searchUsers() {
             const keyword = document.getElementById('search-input').value.trim().toLowerCase();
             const resultsDiv = document.getElementById('search-results');
             resultsDiv.innerHTML = '';
 
             if (!keyword) return;
-            await loadNameTxtFile();
+            await fetchGitHubNameFile();
 
-            let allUsers = Object.keys(nameTxtDatabase);
+            let allUsers = Object.keys(globalDatabase);
             let myFriends = JSON.parse(localStorage.getItem(`friends_${currentUser}`) || '[]');
             const matched = allUsers.filter(u => u.toLowerCase().includes(keyword) && u !== currentUser);
 
@@ -291,8 +337,8 @@
             }
 
             myFriends.forEach(friend => {
-                let peerAvatar = localStorage.getItem(`avatar_${friend}`);
-                let html = peerAvatar ? `<img src="${peerAvatar}" class="w-full h-full object-cover">` : friend.charAt(0).toUpperCase();
+                let friendObj = globalDatabase[friend];
+                let html = (friendObj && friendObj.avatar) ? `<img src="${friendObj.avatar}" class="w-full h-full object-cover">` : friend.charAt(0).toUpperCase();
 
                 const div = document.createElement('div');
                 div.className = `p-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-50 transition ${currentPeer === friend ? 'bg-indigo-50 border-r-4 border-indigo-600' : ''}`;
@@ -311,15 +357,14 @@
             document.getElementById('active-chat').classList.remove('hidden');
             document.getElementById('chat-peer-name').innerText = friend;
             
-            let peerAvatar = localStorage.getItem(`avatar_${friend}`);
-            let html = peerAvatar ? `<img src="${peerAvatar}" class="w-full h-full object-cover">` : friend.charAt(0).toUpperCase();
+            let peerObj = globalDatabase[friend];
+            let html = (peerObj && peerObj.avatar) ? `<img src="${peerObj.avatar}" class="w-full h-full object-cover">` : friend.charAt(0).toUpperCase();
             document.getElementById('chat-peer-avatar').innerHTML = html;
 
             loadMessages();
             loadFriends();
         }
 
-        // ระบบแชทและการโทร
         function getChatKey() { return [currentUser, currentPeer].sort().join('_'); }
 
         function sendMessage() {
