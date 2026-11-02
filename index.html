@@ -1,155 +1,454 @@
+HTML
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App - GitHub API</title>
-    <style>
-        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
-        .tab { flex: 1; padding: 10px; cursor: pointer; font-weight: bold; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-        .tab.active { color: #2ea44f; border-bottom: 2px solid #2ea44f; }
-        input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #2ea44f; color: white; border: none; font-weight: bold; cursor: pointer; }
-        button:hover { background: #2c974b; }
-        .form-section { display: none; }
-        .form-section.active { display: block; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Hmoob Chats</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#182230;--muted:#8490a3;--accent:#6558f5;--line:#edf0f6;--green:#20b77a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:500px;margin:auto;min-height:100dvh;background:var(--card);position:relative;overflow:hidden}
+.top{padding:22px 20px 16px;background:linear-gradient(135deg,#6558f5,#8b72ff);color:white}
+.brand{display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:25px;font-weight:850;letter-spacing:-1px}
+.logo span{color:#c9ffea}
+.small{font-size:12px;opacity:.8;margin-top:3px}
+.profileBtn{width:45px;height:45px;border:2px solid #ffffff8c;border-radius:50%;padding:0;overflow:hidden;background:#ffffff30;color:white;font-size:20px}
+.profileBtn img,.avatar img{width:100%;height:100%;object-fit:cover}
+.page{padding:20px}
+h1{font-size:26px;margin:5px 0 8px}
+h2{font-size:20px;margin:0}
+.muted{color:var(--muted);font-size:13px}
+.field{margin:15px 0}
+label{font-size:13px;font-weight:700;display:block;margin-bottom:7px}
+input,textarea{width:100%;border:1px solid #e1e5ef;border-radius:14px;padding:14px;background:#fafbfe;outline:none;color:var(--ink)}
+input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #6558f51b}
+.btn{border:0;border-radius:14px;padding:14px 18px;background:var(--accent);color:white;font-weight:750;width:100%;box-shadow:0 6px 16px #6558f52b}
+.btn:disabled{opacity:.5}
+.link{background:none;border:0;color:var(--accent);font-weight:700;padding:12px}
+.row{display:flex;gap:10px;align-items:center}
+.row>*{min-width:0}
+.hidden{display:none!important}
+.search{position:relative;margin:0 20px 12px}
+.search input{padding-left:42px;background:#f5f6fb;border:0}
+.search:before{content:"⌕";position:absolute;left:15px;top:7px;font-size:26px;color:#8993a6}
+.sectionTitle{display:flex;align-items:center;justify-content:space-between;margin:8px 20px 12px}
+.list{padding:0 12px 95px}
+.person{display:flex;align-items:center;gap:12px;padding:13px 9px;border-bottom:1px solid var(--line);width:100%;text-align:left;background:white;border-top:0;border-left:0;border-right:0}
+.avatar{width:52px;height:52px;flex:0 0 52px;border-radius:50%;background:#ece9ff;color:var(--accent);display:grid;place-items:center;font-size:20px;font-weight:800;overflow:hidden}
+.personMain{flex:1;min-width:0}
+.personName{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.preview{font-size:13px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.time{font-size:10px;color:var(--muted);white-space:nowrap}
+.bottom{position:sticky;bottom:0;background:#ffffffed;border-top:1px solid var(--line);padding:12px 20px;display:flex;justify-content:space-around;color:var(--muted);font-size:12px}
+.bottom button{background:none;border:0;color:inherit}
+.bottom strong{display:block;font-size:21px;margin-bottom:3px}
+.chatHead{padding:15px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.back{border:0;background:#f2f1ff;color:var(--accent);border-radius:12px;padding:9px 13px}
+.chatHead .personMain{flex:1}
+.chatMessages{height:calc(100dvh - 185px);max-height:690px;overflow:auto;padding:18px 14px;background:#f7f8fc}
+.bubble{max-width:82%;padding:11px 14px;border-radius:17px;margin:8px 0;overflow-wrap:anywhere;white-space:pre-wrap;font-size:14px}
+.mine{margin-left:auto;background:var(--accent);color:white;border-bottom-right-radius:5px}
+.theirs{background:white;border:1px solid var(--line);border-bottom-left-radius:5px}
+.bubble time{display:block;font-size:10px;opacity:.65;text-align:right;margin-top:5px}
+.composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:white}
+.composer input{flex:1;border-radius:24px}
+.send{border:0;border-radius:50%;width:48px;height:48px;background:var(--accent);color:white;font-size:20px}
+.notice{background:#fff5d9;color:#7a5810;border-radius:12px;padding:11px;font-size:12px;margin:12px 0}
+
+/* Email input และเครื่องหมายถูก */
+.emailInputWrap{
+  position:relative;
+}
+.emailInputWrap input{
+  padding-right:48px;
+}
+.emailCheck{
+  position:absolute;
+  right:15px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--green);
+  font-size:23px;
+  font-weight:900;
+  pointer-events:none;
+  animation:checkIn .2s ease-out;
+}
+@keyframes checkIn{
+  from{opacity:0;transform:translateY(-50%) scale(.5)}
+  to{opacity:1;transform:translateY(-50%) scale(1)}
+}
+
+.emailNotice{
+  background:#fff5d9;
+  color:#7a5810;
+  border:1px solid #f5df9b;
+  border-radius:12px;
+  padding:11px 13px;
+  font-size:12px;
+  line-height:1.6;
+  margin:-5px 0 15px;
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  animation:noticeIn .2s ease-out;
+}
+.emailNotice .noticeIcon{font-size:16px;line-height:1.4;flex-shrink:0}
+@keyframes noticeIn{
+  from{opacity:0;transform:translateY(-5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.avatarBig{width:100px;height:100px;border-radius:50%;overflow:hidden;background:#ece9ff;display:grid;place-items:center;font-size:36px;color:var(--accent);margin:10px auto 22px}
+.modal{position:fixed;inset:0;background:#12172b70;display:grid;place-items:center;padding:20px;z-index:10}
+.modalBox{background:white;padding:22px;border-radius:22px;max-width:350px;width:100%;box-shadow:0 20px 70px #0002}
+.modalBox h3{margin:0 0 10px}
+.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#202437;color:white;border-radius:12px;padding:12px 18px;font-size:13px;z-index:20;max-width:90%;text-align:center}
+.empty{text-align:center;color:var(--muted);padding:35px 15px;font-size:14px}
+@media(min-width:501px){body{padding:20px 0}.app{min-height:calc(100dvh - 40px);border-radius:25px;box-shadow:0 15px 60px #25304a12}}
+</style>
 </head>
 <body>
+<div class="app">
+  <section id="auth">
+    <header class="top">
+      <div class="brand"><div><div class="logo">Hmoob <span>Chats</span></div><div class="small">Connect with your community</div></div><div style="font-size:32px">✦</div></div>
+    </header>
+    <div class="page">
+      <div id="loginBox">
+        <h1>Zoo siab txais tos!</h1>
+        <p class="muted">เข้าสู่ระบบเพื่อเริ่มต้นสนทนา</p>
+        <div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="you@gmail.com" autocomplete="email"></div>
+        <div class="field"><label>PIN 4 หลัก</label><input id="loginPin" inputmode="numeric" maxlength="4" type="password" placeholder="••••"></div>
+        <button class="btn" onclick="doLogin()">เข้าสู่ระบบ →</button>
+        <p style="text-align:center;margin-top:18px">ยังไม่มีบัญชี? <button class="link" onclick="showRegister()">ลงทะเบียน</button></p>
+      </div>
 
-    <div class="card">
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('login')">ลงชื่อเข้าใช้</div>
-            <div class="tab" onclick="switchTab('register')">ลงทะเบียน</div>
+      <div id="registerBox" class="hidden">
+        <button class="link" onclick="showLogin()">← กลับเข้าสู่ระบบ</button>
+        <h1>สร้างบัญชีใหม่</h1>
+        <p class="muted">สมัครสมาชิก Hmoob Chats ได้ง่าย ๆ</p>
+
+        <div class="field">
+          <label>ชื่อผู้ใช้</label>
+          <input id="regName" maxlength="40" placeholder="ชื่อที่ต้องการแสดง">
         </div>
 
-        <div id="login-section" class="form-section active">
-            <h2>เข้าสู่ระบบ</h2>
-            <input type="email" id="login-email" placeholder="อีเมล (Email)">
-            <input type="password" id="login-pin" maxlength="4" placeholder="รหัส PIN 4 หลัก">
-            <button onclick="handleLogin()">ลงชื่อเข้าใช้</button>
-            <p id="login-status" style="color: red; font-size: 14px;"></p>
+        <div class="field" id="regEmailField">
+          <label>Email</label>
+          <div class="emailInputWrap">
+            <input id="regEmail" type="email" placeholder="you@gmail.com" onfocus="emailNotice()" oninput="checkRegisterEmail()" autocomplete="email">
+            <span id="emailCheck" class="emailCheck hidden" aria-label="Email ถูกต้อง">✓</span>
+          </div>
         </div>
 
-        <div id="register-section" class="form-section">
-            <h2>สมัครสมาชิก</h2>
-            <input type="email" id="reg-email" placeholder="อีเมล (Email)">
-            <input type="password" id="reg-pin" maxlength="4" placeholder="รหัส PIN 4 หลัก">
-            <button onclick="handleRegister()">ลงทะเบียน</button>
-            <p id="reg-status" style="color: red; font-size: 14px;"></p>
+        <div id="emailInlineNotice" class="emailNotice hidden" role="status" aria-live="polite">
+          <span class="noticeIcon">ⓘ</span>
+          <span>กรุณาใช้อีเมลที่ลงท้ายด้วย <b>@gmail.com</b>, <b>@hotmail.com</b> หรือ <b>@outlook.com</b> เท่านั้น</span>
         </div>
+
+        <div class="field">
+          <label>ตั้ง PIN 4 หลัก</label>
+          <input id="regPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+        </div>
+
+        <button class="btn" onclick="doRegister()">ยืนยันและสร้างบัญชี</button>
+      </div>
     </div>
+  </section>
 
-    <script>
-        const GITHUB_TOKEN = "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";
-        const REPO_OWNER = "hmoobcode";
-        const REPO_NAME = "UST_th";
-        const FILE_PATH = "name.txt";
+  <section id="home" class="hidden">
+    <header class="top">
+      <div class="brand">
+        <div><div class="logo">Hmoob <span>Chats</span></div><div class="small">Your conversations, together.</div></div>
+        <button class="profileBtn" onclick="showProfile()" id="topAvatar">☺</button>
+      </div>
+    </header>
+    <div style="padding-top:18px">
+      <div class="search"><input id="search" placeholder="ค้นหาผู้ใช้..." oninput="searchChanged()"></div>
+      <div class="sectionTitle"><h2 id="listHeading">ข้อความ</h2><span class="muted" id="listCount"></span></div>
+      <div id="userList" class="list"></div>
+    </div>
+    <div class="bottom">
+      <button onclick="showChats()"><strong>▤</strong>แชท</button>
+      <button onclick="showProfile()"><strong>◉</strong>โปรไฟล์</button>
+    </div>
+  </section>
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
-            
-            if (tabName === 'login') {
-                document.querySelectorAll('.tab')[0].classList.add('active');
-                document.getElementById('login-section').classList.add('active');
-            } else {
-                document.querySelectorAll('.tab')[1].classList.add('active');
-                document.getElementById('register-section').classList.add('active');
-            }
-        }
+  <section id="chat" class="hidden">
+    <div class="chatHead">
+      <button class="back" onclick="showChats()">←</button>
+      <div class="avatar" id="chatAvatar">☺</div>
+      <div class="personMain"><div class="personName" id="chatName"></div><div class="muted">Hmoob Chats</div></div>
+    </div>
+    <div id="messages" class="chatMessages"></div>
+    <form class="composer" onsubmit="sendCurrent(event)">
+      <input id="messageInput" maxlength="3000" placeholder="พิมพ์ข้อความ..." autocomplete="off">
+      <button class="send" aria-label="ส่งข้อความ">➤</button>
+    </form>
+  </section>
 
-        async function getFileData() {
-            try {
-                const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
-                    headers: { "Authorization": `token ${GITHUB_TOKEN}` }
-                });
-                if (res.ok) {
-                    const json = await res.json();
-                    return { data: JSON.parse(atob(json.content)), sha: json.sha };
-                }
-            } catch (err) {
-                console.error(err);
-            }
-            return { data: {}, sha: "" };
-        }
+  <section id="profile" class="hidden">
+    <header class="top"><div class="brand"><div class="logo">โปรไฟล์</div><button class="profileBtn" onclick="showChats()">✕</button></div></header>
+    <div class="page">
+      <div class="avatarBig" id="bigAvatar">☺</div>
+      <div class="field"><label>รูปโปรไฟล์</label><input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewAvatar(event)"></div>
+      <div class="field"><label>ชื่อผู้ใช้</label><input id="profileName" maxlength="40"></div>
+      <div class="field"><label>Email</label><input id="profileEmail" disabled></div>
+      <button class="btn" onclick="saveProfile()">บันทึกการเปลี่ยนแปลง</button>
+      <button class="link" style="width:100%;margin-top:10px" onclick="logout()">ออกจากระบบ</button>
+    </div>
+  </section>
+</div>
 
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value.trim();
-            const pin = document.getElementById('login-pin').value.trim();
-            const statusEl = document.getElementById('login-status');
+<div id="modal" class="modal hidden">
+  <div class="modalBox"><h3>แจ้งเตือน</h3><p id="modalText"></p><button class="btn" onclick="closeModal()">เข้าใจแล้ว</button></div>
+</div>
+<div id="toast" class="toast hidden"></div>
 
-            if (!email || pin.length !== 4) {
-                statusEl.innerText = "กรุณากรอกอีเมลและรหัส PIN ให้ครบถ้วน";
-                return;
-            }
+<script>
+let me = null, current = null, draftAvatar = "", refreshTimer = null, toastTimer = null;
+const $ = id => document.getElementById(id);
 
-            statusEl.innerText = "กำลังตรวจสอบข้อมูล...";
+function callApi(fn, ...args) {
+  return new Promise((resolve,reject) => {
+    if (!window.google || !google.script || !google.script.run) {
+      reject(new Error("กรุณาเปิดแอปผ่าน URL เว็บแอป Google Apps Script ที่ Deploy แล้ว"));
+      return;
+    }
+    google.script.run.withSuccessHandler(resolve).withFailureHandler(e => {
+      reject(new Error(e && e.message ? e.message : "เกิดข้อผิดพลาด"));
+    })[fn](...args);
+  });
+}
 
-            const { data } = await getFileData();
+function showModal(text){$("modalText").textContent=text;$("modal").classList.remove("hidden")}
+function closeModal(){$("modal").classList.add("hidden")}
+function toast(text){
+  $("toast").textContent=text;$("toast").classList.remove("hidden");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.add("hidden"),2600);
+}
+function showOnly(id){
+  ["auth","home","chat","profile"].forEach(x=>$(x).classList.toggle("hidden",x!==id));
+}
+function showLogin(){
+  $("loginBox").classList.remove("hidden");
+  $("registerBox").classList.add("hidden");
+  hideEmailNotice();
+}
+function showRegister(){
+  $("loginBox").classList.add("hidden");
+  $("registerBox").classList.remove("hidden");
+}
+function emailNotice(){
+  const notice=$("emailInlineNotice");
+  if(emailValid($("regEmail").value)){
+    hideEmailNotice();
+    return;
+  }
+  if(!notice.classList.contains("hidden"))return;
 
-            if (!data[email]) {
-                statusEl.innerText = "tsis tau sau npe";
-                return;
-            }
+  notice.classList.remove("hidden");
 
-            if (data[email].pin !== pin) {
-                statusEl.innerText = "lahav tsis raug";
-                return;
-            }
+  requestAnimationFrame(()=>{
+    $("regEmailField").scrollIntoView({
+      behavior:"smooth",
+      block:"center"
+    });
+  });
+}
+function hideEmailNotice(){
+  $("emailInlineNotice").classList.add("hidden");
+}
+function checkRegisterEmail(){
+  const email=$("regEmail").value.trim();
+  const valid=emailValid(email);
 
-            alert("ยินดีต้อนรับกลับมา, " + email);
-            statusEl.style.color = "green";
-            statusEl.innerText = "เข้าสู่ระบบสำเร็จ!";
-        }
+  // แสดงเครื่องหมายถูกเมื่อ Email ถูกต้อง
+  $("emailCheck").classList.toggle("hidden",!valid);
 
-        async function handleRegister() {
-            const email = document.getElementById('reg-email').value.trim();
-            const pin = document.getElementById('reg-pin').value.trim();
-            const statusEl = document.getElementById('reg-status');
+  // ซ่อนกล่องแจ้งเตือนเมื่อ Email ถูกต้อง
+  if(valid){
+    hideEmailNotice();
+  }else{
+    // ถ้ากลับมาแก้ไขจนไม่ถูกต้อง ให้แสดงคำเตือนอีกครั้ง
+    $("emailInlineNotice").classList.remove("hidden");
+  }
+}
+function emailValid(email){
+  return /^[A-Z0-9._%+-]+@(gmail\.com|hotmail\.com|outlook\.com)$/i.test(email.trim());
+}
+function validateEmail(email){
+  if(!emailValid(email)){
+    showModal("รูปแบบ Email ไม่ถูกต้อง รองรับเฉพาะ Gmail, Hotmail และ Outlook");
+    return false;
+  }
+  return true;
+}
 
-            if (!email || pin.length !== 4) {
-                statusEl.innerText = "กรุณากรอกอีเมลและรหัส PIN ให้ครบถ้วน";
-                return;
-            }
+async function doRegister(){
+  const name=$("regName").value.trim(),email=$("regEmail").value.trim(),pin=$("regPin").value;
+  if(name.length<2){showModal("กรุณากรอกชื่อผู้ใช้อย่างน้อย 2 ตัวอักษร");return}
+  if(!validateEmail(email)){
+    $("regEmail").focus();
+    emailNotice();
+    return;
+  }
+  if(!/^\d{4}$/.test(pin)){showModal("PIN ต้องเป็นตัวเลข 4 หลัก");return}
+  try{
+    const result=await callApi("register",{name,email,pin});
+    me=result.user;enterApp();toast("ลงทะเบียนสำเร็จ");
+  }catch(e){showModal(e.message)}
+}
 
-            statusEl.innerText = "กำลังบันทึกข้อมูล...";
+async function doLogin(){
+  const email=$("loginEmail").value.trim(),pin=$("loginPin").value;
+  if(!validateEmail(email))return;
+  if(!/^\d{4}$/.test(pin)){showModal("กรุณากรอก PIN 4 หลัก");return}
+  try{
+    const result=await callApi("login",{email,pin});
+    me=result.user;enterApp();
+  }catch(e){showModal(e.message)}
+}
 
-            const { data, sha } = await getFileData();
-
-            if (data[email]) {
-                statusEl.innerText = "อีเมลนี้มีบัญชีอยู่ในระบบแล้ว";
-                return;
-            }
-
-            data[email] = { pin: pin, avatar: "" };
-            const contentEncoded = btoa(JSON.stringify(data, null, 2));
-
-            const putRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
-                method: "PUT",
-                headers: {
-                    "Authorization": `token ${GITHUB_TOKEN}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message: `Register user: ${email}`,
-                    content: contentEncoded,
-                    sha: sha
-                })
-            });
-
-            if (putRes.ok || putRes.status === 201) {
-                alert("ลงทะเบียนสำเร็จ! สามารถเข้าสู่ระบบได้เลย");
-                statusEl.style.color = "green";
-                statusEl.innerText = "สำเร็จ!";
-                switchTab('login');
-            } else {
-                const errJson = await putRes.json();
-                statusEl.innerText = "เกิดข้อผิดพลาด: " + errJson.message;
-            }
-        }
-    </script>
+function enterApp(){
+  showOnly("home");updateTopAvatar();$("search").value="";showChats();
+}
+function logout(){
+  me=null;current=null;clearInterval(refreshTimer);showOnly("auth");showLogin();
+  $("loginPin").value="";$("regPin").value="";
+}
+function avatarHTML(user){
+  if(user.avatar)return '<img src="'+user.avatar+'" alt="">';
+  return escapeHTML((user.name||"?").slice(0,1).toUpperCase());
+}
+function escapeHTML(s){
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function updateTopAvatar(){$("topAvatar").innerHTML=avatarHTML(me)}
+function showProfile(){
+  if(!me)return;
+  $("profileName").value=me.name;$("profileEmail").value=me.email;
+  $("bigAvatar").innerHTML=avatarHTML(me);draftAvatar=me.avatar||"";
+  showOnly("profile");
+}
+function previewAvatar(event){
+  const file=event.target.files&&event.target.files[0];if(!file)return;
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)){showModal("กรุณาเลือกไฟล์ JPG, PNG หรือ WebP");return}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement("canvas"),size=256;
+      canvas.width=size;canvas.height=size;
+      const ctx=canvas.getContext("2d");
+      const scale=Math.max(size/img.width,size/img.height);
+      const w=img.width*scale,h=img.height*scale;
+      ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+      draftAvatar=canvas.toDataURL("image/jpeg",.65);
+      if(draftAvatar.length>45000)draftAvatar=canvas.toDataURL("image/jpeg",.4);
+      $("bigAvatar").innerHTML='<img src="'+draftAvatar+'" alt="">';
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+async function saveProfile(){
+  const name=$("profileName").value.trim();
+  if(name.length<2){showModal("ชื่อผู้ใช้ต้องมีอย่างน้อย 2 ตัวอักษร");return}
+  try{
+    const result=await callApi("updateProfile",me.id,{name,avatar:draftAvatar});
+    me=result.user;updateTopAvatar();$("bigAvatar").innerHTML=avatarHTML(me);
+    $("avatarFile").value="";toast("บันทึกโปรไฟล์แล้ว");showChats();
+  }catch(e){showModal(e.message)}
+}
+function showChats(){
+  current=null;clearInterval(refreshTimer);showOnly("home");
+  $("search").value="";loadChats();
+}
+async function loadChats(){
+  if(!me)return;
+  try{
+    const chats=await callApi("getChatList",me.id);
+    if($("search").value.trim())return;
+    $("listHeading").textContent="ข้อความ";
+    $("listCount").textContent=chats.length+" แชท";
+    $("userList").innerHTML="";
+    if(!chats.length){$("userList").innerHTML='<div class="empty">ยังไม่มีบทสนทนา<br>ค้นหาชื่อผู้ใช้เพื่อเริ่มแชทใหม่</div>';return}
+    chats.forEach(c=>{
+      const b=document.createElement("button");b.className="person";
+      b.innerHTML='<div class="avatar">'+avatarHTML(c.user)+'</div><div class="personMain"><div class="personName">'+escapeHTML(c.user.name)+'</div><div class="preview">'+escapeHTML(c.text)+'</div></div><div class="time">'+formatTime(c.createdAt)+'</div>';
+      b.onclick=()=>openChat(c.user);$("userList").appendChild(b);
+    });
+  }catch(e){showModal(e.message)}
+}
+let searchSeq=0;
+async function searchChanged(){
+  const q=$("search").value.trim(),seq=++searchSeq;
+  if(!q){loadChats();return}
+  $("listHeading").textContent="ผลการค้นหา";
+  $("userList").innerHTML='<div class="empty">กำลังค้นหา...</div>';
+  try{
+    const users=await callApi("searchUsers",me.id,q);
+    if(seq!==searchSeq)return;
+    $("listCount").textContent=users.length+" คน";
+    $("userList").innerHTML="";
+    if(!users.length){$("userList").innerHTML='<div class="empty">ไม่พบผู้ใช้ที่ตรงกัน</div>';return}
+    users.forEach(u=>{
+      const b=document.createElement("button");b.className="person";
+      b.innerHTML='<div class="avatar">'+avatarHTML(u)+'</div><div class="personMain"><div class="personName">'+escapeHTML(u.name)+'</div><div class="preview">แตะเพื่อเริ่มสนทนา</div></div><div class="time">แชทใหม่</div>';
+      b.onclick=()=>openChat(u);$("userList").appendChild(b);
+    });
+  }catch(e){showModal(e.message)}
+}
+async function openChat(user){
+  current=user;showOnly("chat");
+  $("chatName").textContent=user.name;$("chatAvatar").innerHTML=avatarHTML(user);
+  $("messages").innerHTML='<div class="empty">กำลังโหลดข้อความ...</div>';
+  $("messageInput").focus();
+  await loadMessages();
+  clearInterval(refreshTimer);
+  refreshTimer=setInterval(()=>{if(current&&me)loadMessages(true)},5000);
+}
+async function loadMessages(quiet=false){
+  if(!current||!me)return;
+  try{
+    const msgs=await callApi("getMessages",me.id,current.id);
+    if(!current)return;
+    const box=$("messages");
+    const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
+    box.innerHTML="";
+    if(!msgs.length)box.innerHTML='<div class="empty">เริ่มต้นบทสนทนาของคุณ 👋</div>';
+    msgs.forEach(m=>{
+      const div=document.createElement("div");
+      div.className="bubble "+(m.fromId===me.id?"mine":"theirs");
+      div.textContent=m.text;
+      const time=document.createElement("time");time.textContent=formatTime(m.createdAt);
+      div.appendChild(time);box.appendChild(div);
+    });
+    if(wasBottom||!quiet)box.scrollTop=box.scrollHeight;
+  }catch(e){if(!quiet)showModal(e.message)}
+}
+async function sendCurrent(event){
+  event.preventDefault();
+  if(!current)return;
+  const input=$("messageInput"),text=input.value.trim();
+  if(!text)return;
+  input.value="";
+  try{
+    await callApi("sendMessage",me.id,current.id,text);
+    await loadMessages();
+  }catch(e){input.value=text;showModal(e.message)}
+}
+function formatTime(value){
+  const d=new Date(value);if(isNaN(d.getTime()))return "";
+  return d.toLocaleDateString("th-TH",{day:"numeric",month:"short"})+" "+
+    d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
+}
+</script>
 </body>
 </html>
